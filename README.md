@@ -51,6 +51,52 @@ userId
 With Apache Cassandra, the database tables are modelled on the requested queries.
 
 1. Give me the artist, song title and song's length in the music app history that was heard during sessionId = 338, and itemInSession = 4
->> The combination of sessionId and itemInSession is unique, and we need results based on sessionId and itmeInSession, so these two columns could be the Composite Primary Key of the table.
-Since itemInSession could be skewed to some specific value, it's better to use sessionId as Priamary key so the data could be evenly distributed on the nodes
-We need the artist name, song title and song length based on the sessionId and itemInSession Based on the above requirements, we could design the data model as follows:
+> The combination of sessionId and itemInSession is unique, and we need results based on sessionId and itmeInSession, so these two columns could be the Composite Primary Key of the table.
+> We need the artist name, song title and song length based on the sessionId and itemInSession Based on the above requirements, we could design the data model as follows:
+```
+Create table music_library
+    (
+        sessionId INT,
+        itemInSession INT,
+        artist_name TEXT,
+        song_title TEXT,
+        song_length FLOAT,
+        PRIMARY KEY (sessionId, itemInSession)  
+    )
+  ```
+2. Give me only the following: name of artist, song (sorted by itemInSession) and user (first and last name) for userid = 10, sessionid = 182
+> Since we need results based on userid and sessionid, it could make good perfomance to use userid and sessionid as partition key to make sure the sessions belonging to the same user could be distributed to same node
+> Since the data needs to be sorted by itemInSession, the itemInSession should be the clustering key
+> Besides Primary Key, we need artist name, song title and user name for this query Based on the above requirements, we could design the data model as follows:
+```
+Create table artist_user_library
+    (
+         artist_name TEXT, 
+         song_title TEXT, 
+         itemInSession INT, 
+         user_firstname TEXT,
+         user_lastname TEXT,
+         userId INT, 
+         sessionId INT,
+         PRIMARY KEY((userId, sessionId), itemInSession)) 
+         WITH CLUSTERING ORDER BY (itemInSession DESC)
+     )
+```
+3. Give me every user name (first and last) in my music app history who listened to the song 'All Hands Against His Own'
+> Since we need the results based on song name, firstName and lastName might be not unique, we need to use song name and userid as Primary Key
+> Use the song name as partition key so the users data listened to the same song could be distributed on the same node, it will improve the query performance
+> we need firatName and lastName as well for this query Based on the above requirements, we could design the data model as follows:
+```
+Create table user_song
+    (
+        song_title TEXT,
+        userId INT,
+        user_firstname TEXT,
+        user_lastname TEXT,  
+        PRIMARY KEY (song_title, userId)  
+    )
+```
+## Build ETL Pipeline
+1. Implement the logic in section Part I of the notebook template to iterate through each event file in `event_data` to process and create a new CSV file in Python
+2. Make necessary edits to Part II of the notebook template to include Apache Cassandra `CREATE` and `INSERT` statements to load processed records into relevant tables in your data model
+3. Test by running `SELECT` statements after running the queries on your database
