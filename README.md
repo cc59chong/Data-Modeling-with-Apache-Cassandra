@@ -30,3 +30,27 @@ Below is an example of what an original single event data file, *2018-11-08-even
     "userId":20    
 }
 ```
+## ETL Pipeline for Pre-Processing the Files
+Processing the original event data files to create the event_datafile_new.csv that will be used for creating Apache Casssandra tables
+
+The event_datafile_new.csv contains the following columns:
+```
+artist
+firstName
+gender
+itemInSession
+lastName
+length
+level
+location
+sessionId
+song
+userId
+```
+## Data Modeling
+With Apache Cassandra, the database tables are modelled on the requested queries.
+
+1. Give me the artist, song title and song's length in the music app history that was heard during sessionId = 338, and itemInSession = 4
+>> The combination of sessionId and itemInSession is unique, and we need results based on sessionId and itmeInSession, so these two columns could be the Composite Primary Key of the table.
+Since itemInSession could be skewed to some specific value, it's better to use sessionId as Priamary key so the data could be evenly distributed on the nodes
+We need the artist name, song title and song length based on the sessionId and itemInSession Based on the above requirements, we could design the data model as follows:
