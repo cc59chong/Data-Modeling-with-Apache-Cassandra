@@ -78,8 +78,8 @@ Create table artist_user_library
          user_lastname TEXT,
          userId INT, 
          sessionId INT,
-         PRIMARY KEY((userId, sessionId), itemInSession)) 
-         WITH CLUSTERING ORDER BY (itemInSession DESC) # not necessary
+         PRIMARY KEY((userId, sessionId), itemInSession)) # already clustering here
+         WITH CLUSTERING ORDER BY (itemInSession DESC) # not necessary using this
      )
 ```
 3. Give me every user name (first and last) in my music app history who listened to the song 'All Hands Against His Own'
